@@ -10,20 +10,14 @@ const Dashboard = () => {
     {
       id: 1,
       image: "banner1.jpg",
-      title: "Slide 1 Title",
-      description: "Description for Slide 1",
     },
     {
       id: 2,
       image: "banner2.jpg",
-      title: "Slide 2 Title",
-      description: "Description for Slide 2",
     },
     {
       id: 3,
       image: "banner3.jpg",
-      title: "Slide 3 Title",
-      description: "Description for Slide 3",
     },
   ];
 
@@ -36,7 +30,6 @@ const Dashboard = () => {
       prevSlide === 0 ? bannerItems.length - 1 : prevSlide - 1
     );
   };
-
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -70,7 +63,12 @@ const Dashboard = () => {
               to="/products"
               role="tab"
               className="tab text-lg text-green-700 hover:underline"
-              onClick={() => sessionStorage.setItem('selectedCategory', category.category_name)}
+              onClick={() =>
+                sessionStorage.setItem(
+                  "selectedCategory",
+                  category.category_name
+                )
+              }
             >
               {category.category_name}
             </Link>
@@ -78,7 +76,7 @@ const Dashboard = () => {
         </div>
 
         {/* Carousel Section */}
-        <div className="container mx-auto px-4 py-7">
+        <div className="container mx-auto py-7">
           <div className="carousel w-full">
             {bannerItems.map((item, index) => (
               <div
@@ -90,14 +88,9 @@ const Dashboard = () => {
                 <img
                   src={item.image}
                   alt={item.title}
-                  className="h-[200px] w-full object-cover rounded-lg md:h-[330px]"
+                  className="h-[350px] w-full object-contain rounded-lg md:h-350px]"
                 />
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center text-white bg-black bg-opacity-50">
-                  <h2 className="mb-2 text-2xl font-bold md:text-3xl">
-                    {item.title}
-                  </h2>
-                  <p className="text-sm md:text-base">{item.description}</p>
-                </div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center text-white bg-opacity-10"></div>
               </div>
             ))}
           </div>

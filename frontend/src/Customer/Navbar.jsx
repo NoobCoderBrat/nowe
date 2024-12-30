@@ -3,6 +3,7 @@ import { FaShoppingCart } from "react-icons/fa";
 import { TbShoppingCartCheck } from "react-icons/tb";
 import PurchaseHistory from "./PurchaseHistory";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const userDetails = JSON.parse(sessionStorage.getItem("user"));
@@ -13,25 +14,25 @@ const Navbar = () => {
   const [isPurchaseSuccessModalOpen, setIsPurchaseSuccessModalOpen] =
     useState(false);
 
-    useEffect(() => {
-      fetchCartItems();
-    }, []);
-  
-    const fetchCartItems = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:1337/api/carts?filters[user_name][$eq]=${userDetails.name}&_limit=1000`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setCartItems(data.data);
-        } else {
-          console.error("Failed to fetch cart items");
-        }
-      } catch (error) {
-        console.error("Error fetching cart items:", error);
+  useEffect(() => {
+    fetchCartItems();
+  }, []);
+
+  const fetchCartItems = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:1337/api/carts?filters[user_name][$eq]=${userDetails.name}&_limit=1000`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setCartItems(data.data);
+      } else {
+        console.error("Failed to fetch cart items");
       }
-    };
+    } catch (error) {
+      console.error("Error fetching cart items:", error);
+    }
+  };
 
   const toggleCartModal = () => {
     setIsCartModalOpen(!isCartModalOpen);
@@ -52,7 +53,7 @@ const Navbar = () => {
           ? {
               ...item,
               quantity: newQuantity,
-              totalPrice: item.price * newQuantity,
+              totalPrice: item.price * newQuantity, // Dynamically update the total price based on new quantity
             }
           : item
       )
@@ -61,10 +62,10 @@ const Navbar = () => {
 
   const getTotalPrice = () => {
     return cartItems
-      .reduce((acc, item) => acc + item.price * item.quantity, 0)
-      .toFixed(2);
+      .filter((item) => selectedItems.includes(item.id)) // Only include selected items
+      .reduce((acc, item) => acc + item.price * item.quantity, 0) // Multiply price by quantity and sum up
+      .toFixed(2); // Format to 2 decimal places
   };
-
 
   const toggleSelection = (productId) => {
     setSelectedItems((prevSelectedItems) =>
@@ -76,13 +77,13 @@ const Navbar = () => {
 
   const handleCheckout = async (e) => {
     e.preventDefault();
-  
+
     const today = new Date();
     const formattedDate = today.toISOString().split("T")[0];
     const selectedCartItems = cartItems.filter((item) =>
       selectedItems.includes(item.id)
     );
-  
+
     for (const item of selectedCartItems) {
       const cartData = {
         data: {
@@ -94,9 +95,9 @@ const Navbar = () => {
           branch_name: item.branch_name,
         },
       };
-  
+
       const jsonString = JSON.stringify(cartData);
-  
+
       try {
         const response = await fetch("http://localhost:1337/api/transactions", {
           method: "POST",
@@ -105,7 +106,7 @@ const Navbar = () => {
           },
           body: jsonString,
         });
-  
+
         if (response.ok) {
           const data = await response.json();
           console.log("Item processed:", data);
@@ -117,10 +118,10 @@ const Navbar = () => {
         console.error("Error:", error);
       }
     }
-  
+
     handleDelete(selectedCartItems);
   };
-  
+
   const handleDelete = async (items) => {
     for (const item of items) {
       try {
@@ -133,10 +134,12 @@ const Navbar = () => {
             },
           }
         );
-  
+
         if (response.ok) {
           const data = await response.json();
-          setCart((prevCart) => prevCart.filter((cartItem) => cartItem.id !== item.id));
+          setCart((prevCart) =>
+            prevCart.filter((cartItem) => cartItem.id !== item.id)
+          );
           setSelectedItems((prevSelectedItems) =>
             prevSelectedItems.filter((id) => id !== item.id)
           );
@@ -152,15 +155,19 @@ const Navbar = () => {
     alert("Checkout successful");
     window.location.reload();
   };
-  
 
   return (
     <>
       <div className="navbar bg-green-500 px-5">
         <div className="flex-1">
-          <img className="h-14 w-14" src="login.png" alt="logo" />
-          <p className="text-xl text-white font-bold">ShopEase Mart</p>
+          <Link to="/dashboard">
+            <img className="h-14 w-14" src="login.png" alt="logo" />
+          </Link>
+          <Link to="/dashboard">
+            <p className="text-xl text-white font-bold">ShopEase Mart</p>
+          </Link>
         </div>
+
         <div className="flex-none gap-4">
           <div className="dropdown dropdown-end text-white">
             <div
@@ -180,7 +187,7 @@ const Navbar = () => {
               className="flex text-white underline gap-1"
             >
               <HiUserCircle size={26} />
-              <p className="text-md">Marion Jotohot</p>
+              <p className="text-md">Marion</p>
             </div>
             <ul
               tabIndex={0}
@@ -222,16 +229,18 @@ const Navbar = () => {
             </h2>
             <hr />
             <div className="overflow-y-auto max-h-[60vh] mb-4">
+              {/* Loop through cart items */}
               {cartItems.map((item) => (
                 <div
                   key={item.id}
                   className="flex justify-between mb-4 border-b pb-4"
                 >
+                  {/* Checkbox to select/deselect the product */}
                   <input
-                  type="checkbox"
-                  checked={selectedItems.includes(item.id)}
-                  onChange={() => toggleSelection(item.id)}
-                />
+                    type="checkbox"
+                    checked={selectedItems.includes(item.id)}
+                    onChange={() => toggleSelection(item.id)} // Toggle selection for this item
+                  />
                   <div className="flex items-center">
                     <img
                       src={item.image}
@@ -247,14 +256,36 @@ const Navbar = () => {
                       </p>
                     </div>
                   </div>
+
+                  {/* Quantity Input Field */}
                   <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={item.quantity}
+                      min="1"
+                      onChange={(e) =>
+                        handleQuantityChange(item.id, e.target.value)
+                      } // Handle quantity change
+                      className="w-12 text-center border rounded-md"
+                    />
+                    {/* Display the Total Price dynamically based on quantity */}
                     <p className="text-lg font-bold text-green-600">
-                    ₱{(item.price * item.quantity).toFixed(2)}
+                      ₱{(item.price * item.quantity).toFixed(2)}{" "}
+                      {/* Total Price for the individual product */}
                     </p>
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* Display the Total Price of all checked cart items */}
+            <div className="mt-4 flex justify-between font-bold">
+              <p className="text-lg">Total: </p>
+              <p className="text-lg text-green-600">
+                ₱{getTotalPrice()} {/* Total price of all selected products */}
+              </p>
+            </div>
+
             <div className="mt-4 flex justify-end gap-4 font-bold">
               <button
                 onClick={toggleCartModal}

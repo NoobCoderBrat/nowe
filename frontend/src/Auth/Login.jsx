@@ -13,6 +13,11 @@ const Login = () => {
   const [role, setRole] = useState("customers");
   const navigate = useNavigate();
 
+  const [signupName, setSignupName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [signupConfirmPassword, setSignupConfirmPassword] = useState("");
+
   const handleSignIn = async (e) => {
     e.preventDefault();
     setLoadingSignIn(true);
@@ -30,6 +35,8 @@ const Login = () => {
 
       if (data.data.length === 0) {
         setError("Wrong Credentials");
+        alert("wrong credentials");
+        setLoadingSignIn(false);
         return;
       }
 
@@ -46,6 +53,7 @@ const Login = () => {
       } else {
         navigate("/dashboard");
       }
+      setLoadingSignIn(false);
     } catch (err) {
       setError(err.message || "An error occurred while logging in.");
     }
@@ -64,8 +72,8 @@ const Login = () => {
         name: name,
         email: email,
         password: password,
-      }
-    }
+      },
+    };
     const jsonString = JSON.stringify(jsonData);
     try {
       const response = await fetch(`http://localhost:1337/api/${role}`, {
@@ -77,17 +85,17 @@ const Login = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        setName('');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
+        setName("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
         setTimeout(() => {
           setLoadingSignUp(false);
           document.getElementById("registration_modal").close();
           alert("Sign up successful!");
         }, 2000);
       } else {
-        const errorData = await response.text(); 
+        const errorData = await response.text();
         alert("Registration failed!");
         console.error(errorData);
       }
@@ -95,7 +103,6 @@ const Login = () => {
       console.error("Error:", error);
       alert("An error occurred while registering!");
     }
-    
   };
 
   return (
@@ -124,9 +131,13 @@ const Login = () => {
                     <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
                     <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
                   </svg>
-                  <input type="text" className="grow" placeholder="Email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}/>
+                  <input
+                    type="text"
+                    className="grow"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </label>
               </div>
               <div className="form-control mb-4">
@@ -148,7 +159,7 @@ const Login = () => {
                     className="grow"
                     placeholder="Password"
                     value={password}
-                   onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                 </label>
                 <div className="flex items-center mt-4">
@@ -164,9 +175,11 @@ const Login = () => {
                 </div>
               </div>
               <div className="flex gap-2">
-                <select className="select select-bordered w-1/2"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}>
+                <select
+                  className="select select-bordered w-1/2"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                >
                   <option value="customers">Customer</option>
                   <option value="admins">Admin</option>
                 </select>
@@ -237,9 +250,13 @@ const Login = () => {
                 >
                   <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM12.735 14c.618 0 1.093-.561.872-1.139a6.002 6.002 0 0 0-11.215 0c-.22.578.254 1.139.872 1.139h9.47Z" />
                 </svg>
-                <input type="text" className="grow" placeholder="Name" 
-                 value={name}
-                 onChange={(e) => setName(e.target.value)}/>
+                <input
+                  type="text"
+                  className="grow"
+                  placeholder="Name"
+                  value={signupName}
+                  onChange={(e) => setSignupName(e.target.value)}
+                />
               </label>
             </div>
             <div className="form-control mb-2">
@@ -253,9 +270,13 @@ const Login = () => {
                   <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
                   <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
                 </svg>
-                <input type="text" className="grow" placeholder="Email" 
-                 value={email}
-                 onChange={(e) => setEmail(e.target.value)}/>
+                <input
+                  type="text"
+                  className="grow"
+                  placeholder="Email"
+                  value={signupEmail}
+                  onChange={(e) => setSignupEmail(e.target.value)}
+                />
               </label>
             </div>
             <div className="form-control mb-2">
@@ -272,10 +293,12 @@ const Login = () => {
                     clipRule="evenodd"
                   />
                 </svg>
-                <input type="password" className="grow" 
-                 value={password}
-                 onChange={(e) => setPassword(e.target.value)}
-                 />
+                <input
+                  type="password"
+                  className="grow"
+                  value={signupPassword}
+                  onChange={(e) => setSignupPassword(e.target.value)}
+                />
               </label>
             </div>
             <div className="form-control mb-5">
@@ -292,16 +315,22 @@ const Login = () => {
                     clipRule="evenodd"
                   />
                 </svg>
-                <input type="password" className="grow" 
-                 value={confirmPassword}
-                 onChange={(e) => setConfirmPassword(e.target.value)}/>
+                <input
+                  type="password"
+                  className="grow"
+                  value={signupConfirmPassword}
+                  onChange={(e) => setSignupConfirmPassword(e.target.value)}
+                />
               </label>
             </div>
             <div className="flex gap-2">
-              <select className="select select-bordered w-1/2" value={role}
-              onChange={(e) => setRole(e.target.value)}>
-                <option  value="customers">Customer</option>
-                <option  value="admins">Admin</option>
+              <select
+                className="select select-bordered w-1/2"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <option value="customers">Customer</option>
+                <option value="admins">Admin</option>
               </select>
               <button
                 type="submit"
